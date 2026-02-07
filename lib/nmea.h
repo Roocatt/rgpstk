@@ -1,7 +1,16 @@
-/*
- * Created by Roos Catling-Tate.
- * 
- * Copyright 2026
+/* Copyright 2026 Roos Catling-Tate
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any purpose with or
+ * without fee is hereby granted, provided that the above copyright notice and this permission
+ * notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS” AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+ * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 #ifndef RGPSTK_NMEA_H
@@ -16,7 +25,7 @@
 #define RGPSTK_NMEA_CHAR_ENCAPSULATION_START '!'
 #define RGPSTK_NMEA_CHAR_END '\n'
 #define RGPSTK_NMEA_CHAR_FIELD_DELIMITER ','
-#define RGPSTK_NMEA_CHAR_CHECKSUM_DELIMITER '$'
+#define RGPSTK_NMEA_CHAR_CHECKSUM_DELIMITER '*'
 #define RGPSTK_NMEA_CHAR_TAG_BLOCK_DELIMITER '\\'
 #define RGPSTK_NMEA_CHAR_HEX_DELIMITER '^'
 #define RGPSTK_NMEA_CHAR_RESERVED '~'
@@ -59,8 +68,23 @@ typedef struct {
 	bool nmea_checksum; /* if true, last field holds checksum */
 } rgpstk_nmea_message_t;
 
-bool	rgpstk_nmea_message_has_lat_long(rgpstk_nmea_message_t *);
-int	rgpstk_nmea_gps_get_lat_long(rgpstk_nmea_message_t *);
+typedef enum {
+	RGPSTK_NMEA_NORTH = 'N',
+	RGPSTK_NMEA_SOUTH = 'S',
+	RGPSTK_NMEA_EAST = 'E',
+	RGPSTK_NMEA_WEST = 'W',
+} rgpstk_nmea_direction_t;
+
+typedef struct {
+	double degrees;
+	rgpstk_nmea_direction_t direction;
+} rgpstk_nmea_coordinate_t;
+
+bool	rgpstk_nmea_is_direction(uint8_t);
+bool	rgpstk_nmea_direction_is_lat(rgpstk_nmea_direction_t);
+bool	rgpstk_nmea_direction_is_long(rgpstk_nmea_direction_t);
+bool	rgpstk_nmea_message_has_lat_long(const rgpstk_nmea_message_t *);
+int	rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *, rgpstk_nmea_coordinate_t *, rgpstk_nmea_coordinate_t *);
 int	rgpstk_nmea_message_load(const char *, uint8_t, rgpstk_nmea_message_t *);
 void	rgpstk_nmea_message_start_end_index(const char *, int8_t, int8_t *, int8_t *);
 void	rgpstk_nmea_message_free(rgpstk_nmea_message_t *);

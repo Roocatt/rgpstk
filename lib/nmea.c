@@ -1,15 +1,26 @@
-/*
- * Created by Roos Catling-Tate.
- * 
- * Copyright 2026
+/* Copyright 2026 Roos Catling-Tate
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any purpose with or
+ * without fee is hereby granted, provided that the above copyright notice and this permission
+ * notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS” AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+ * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#include "nmea.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "nmea.h"
+
+#include <stdio.h>
 
 static char nmea_talker[][2] = {
 	"GP",
@@ -96,22 +107,89 @@ nmea_sentence_index2enum(uint8_t index)
 	return (sentence);
 }
 
-bool
-rgpstk_nmea_message_has_lat_long(rgpstk_nmea_message_t *msg)
+inline bool
+rgpstk_nmea_is_direction(uint8_t dir)
+{
+	bool res;
+
+	switch (dir) {
+	case RGPSTK_NMEA_NORTH:
+	case RGPSTK_NMEA_SOUTH:
+	case RGPSTK_NMEA_EAST:
+	case RGPSTK_NMEA_WEST:
+		res = true;
+		break;
+	default:
+		res = false;
+	}
+
+	return (res);
+}
+
+inline bool
+rgpstk_nmea_direction_is_lat(rgpstk_nmea_direction_t direction)
+{
+	return (direction == RGPSTK_NMEA_NORTH || direction == RGPSTK_NMEA_SOUTH);
+}
+
+inline bool
+rgpstk_nmea_direction_is_long(rgpstk_nmea_direction_t direction)
+{
+	return (direction == RGPSTK_NMEA_EAST || direction == RGPSTK_NMEA_WEST);
+}
+
+inline bool
+rgpstk_nmea_message_has_lat_long(const rgpstk_nmea_message_t *msg)
 {
 	return (msg->nmea_sentence == RGPSTK_NMEA_SENTENCE_GEO_LAT_LONG);
 }
 
 int
-rgpstk_nmea_gps_get_lat_long(rgpstk_nmea_message_t *msg)
+rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *msg, rgpstk_nmea_coordinate_t *lat, rgpstk_nmea_coordinate_t *lon)
 {
+	double geo_lat, geo_long;
 	int res = 0;
+	rgpstk_nmea_direction_t dir_lat, dir_long;
+	char *end_ptr = NULL;
 
-	if (!rgpstk_nmea_message_has_lat_long(msg)) {
+	if (!rgpstk_nmea_message_has_lat_long(msg) || msg->nmea_fields_count != 8) {
 		res = -1;
 		goto err;
 	}
 
+	geo_lat = strtod(msg->nmea_fields[0].value, &end_ptr);
+	if (end_ptr == NULL) {
+		res = -1;
+		goto err;
+	}
+	if (msg->nmea_fields[1].len != 1 || !rgpstk_nmea_is_direction(msg->nmea_fields[1].value[0])) {
+		res = -1;
+		goto err;
+	}
+	dir_lat = (rgpstk_nmea_direction_t)msg->nmea_fields[1].value[0];
+	printf("C\n");
+	geo_long = strtod(msg->nmea_fields[2].value, &end_ptr);
+	if (end_ptr == NULL) {
+		res = -1;
+		goto err;
+	}
+	if (msg->nmea_fields[3].len != 1 || !rgpstk_nmea_is_direction(msg->nmea_fields[3].value[0])) {
+		res = -1;
+		goto err;
+	}
+	dir_long = (rgpstk_nmea_direction_t)msg->nmea_fields[3].value[0];
+	printf("D\n");
+	if (!rgpstk_nmea_direction_is_lat(dir_lat) || !rgpstk_nmea_direction_is_long(dir_long)) {
+		res = -1;
+		goto err;
+	}
+	printf("E\n");
+	/* TODO validate checksum */
+
+	lat->degrees = geo_lat;
+	lat->direction = dir_lat;
+	lon->degrees = geo_long;
+	lon->direction = dir_long;
 
 err:
 	return (res);
@@ -123,7 +201,7 @@ rgpstk_nmea_message_load(const char *buffer, uint8_t len, rgpstk_nmea_message_t 
 	rgpstk_nmea_talker_t talker = RGPSTK_NMEA_TALKER_UNKNOWN;
 	rgpstk_nmea_sentence_t sentence = RGPSTK_NMEA_SENTENCE_UNKNOWN;
 	int res = 0;
-	uint8_t i, j, num_fields = 0, *field_lens, cur_field_len = 0, cur_field_index = 0;
+	uint8_t i, j, num_fields = 1, *field_lens, cur_field_len = 0, cur_field_index = 0;
 	bool check_sum = false;
 
 	memset(msg, 0, sizeof(rgpstk_nmea_message_t));
@@ -165,7 +243,7 @@ rgpstk_nmea_message_load(const char *buffer, uint8_t len, rgpstk_nmea_message_t 
 		goto err;
 	}
 
-	for (i = 7; i < len; i++) {
+	for (i = 7; i < len - 1; i++) {
 		if (buffer[i] == RGPSTK_NMEA_CHAR_FIELD_DELIMITER) {
 			if (check_sum) { /* checksum must be last... */
 				res = -1;
@@ -177,10 +255,9 @@ rgpstk_nmea_message_load(const char *buffer, uint8_t len, rgpstk_nmea_message_t 
 			if (check_sum) {
 				res = -1;
 				goto err;
-			} else {
-				check_sum = true;
-				num_fields++;
 			}
+			check_sum = true;
+			num_fields++;
 		}
 	}
 
@@ -202,7 +279,7 @@ rgpstk_nmea_message_load(const char *buffer, uint8_t len, rgpstk_nmea_message_t 
 	msg->nmea_checksum = check_sum;
 	msg->nmea_fields_count = num_fields;
 
-	for (i = 7; i < len - 3; i++) {
+	for (i = 7; i < len - 2; i++) {
 		if (buffer[i] == RGPSTK_NMEA_CHAR_FIELD_DELIMITER
 		    || buffer[i] == RGPSTK_NMEA_CHAR_CHECKSUM_DELIMITER) {
 			field_lens[cur_field_index] = cur_field_len;
@@ -211,6 +288,7 @@ rgpstk_nmea_message_load(const char *buffer, uint8_t len, rgpstk_nmea_message_t 
 		} else
 			cur_field_len++;
 	}
+	field_lens[cur_field_index] = cur_field_len;
 
 	for (i = 0; i < num_fields; i++) {
 		msg->nmea_fields[i].len = field_lens[i];
@@ -228,13 +306,16 @@ rgpstk_nmea_message_load(const char *buffer, uint8_t len, rgpstk_nmea_message_t 
 
 	cur_field_index = 0;
 	cur_field_len = 0;
-	for (i = 7; i < len - 3; i++) {
+
+	for (i = 7; i < len - 2; i++) {
 		if (buffer[i] == RGPSTK_NMEA_CHAR_FIELD_DELIMITER
 		    || buffer[i] == RGPSTK_NMEA_CHAR_CHECKSUM_DELIMITER) {
 			cur_field_index++;
 			cur_field_len = 0;
-		} else
-			msg->nmea_fields[i].value[cur_field_len] = buffer[i];
+		} else {
+			msg->nmea_fields[cur_field_index].value[cur_field_len] = buffer[i];
+			cur_field_len++;
+		}
 	}
 
 err:
