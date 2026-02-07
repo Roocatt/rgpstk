@@ -1,5 +1,7 @@
 .idea/
 test_*
+DartConfiguration.tcl
+build/
 
 ### C++ template
 # Prerequisites

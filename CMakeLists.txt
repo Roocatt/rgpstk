@@ -5,8 +5,28 @@ project(rgpstk C)
 set(CMAKE_C_STANDARD 11)
 include(CTest)
 
-add_library(rgpstk STATIC lib/nmea.c lib/nmea.h)
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/version.txt" ver)
+string(REGEX MATCH "VERSION_MAJOR ([0-9]*)" _ ${ver})
+set(v_major ${CMAKE_MATCH_1})
+string(REGEX MATCH "VERSION_MINOR ([0-9]*)" _ ${ver})
+set(v_minor ${CMAKE_MATCH_1})
+string(REGEX MATCH "VERSION_PATCH ([0-9]*)" _ ${ver})
+set(v_patch ${CMAKE_MATCH_1})
+add_compile_definitions(RGPSTK_VERSION_MAJOR=${v_major} RGPSTK_VERSION_MINOR=${v_minor} RGPSTK_VERSION_PATCH=${v_patch})
 
-add_executable(test_runner_nmea_lat_long test/test_runner_nmea_lat_long.c)
-target_link_libraries(test_runner_nmea_lat_long PRIVATE rgpstk)
-add_test(NAME test_nmea_lat_long COMMAND test_runner_nmea_lat_long)
+link_directories(${PROJECT_SOURCE_DIR}/build)
+include_directories(${PROJECT_SOURCE_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
+
+add_library(rgpstk STATIC lib/nmea.c lib/nmea.h
+	tools/nmea_parser/src/main.c
+	lib/version.c lib/version.h
+	lib/geo.c
+	lib/geo.h
+	lib/geo_defs.h
+)
+
+add_subdirectory(tools)
+add_subdirectory(test)

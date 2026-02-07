@@ -19,6 +19,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "geo_defs.h"
+
 #define RGPSTK_NMEA_MAX_LEN 82
 
 #define RGPSTK_NMEA_CHAR_START '$'
@@ -34,6 +36,10 @@
 #define RGPSTK_NMEA_CHAR_RANGE_END 0x7e /* '~' */
 
 #define RGPSTK_NMEA_EXTENDED 'P'
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 typedef enum {
 	RGPSTK_NMEA_TALKER_UNKNOWN,
@@ -68,25 +74,15 @@ typedef struct {
 	bool nmea_checksum; /* if true, last field holds checksum */
 } rgpstk_nmea_message_t;
 
-typedef enum {
-	RGPSTK_NMEA_NORTH = 'N',
-	RGPSTK_NMEA_SOUTH = 'S',
-	RGPSTK_NMEA_EAST = 'E',
-	RGPSTK_NMEA_WEST = 'W',
-} rgpstk_nmea_direction_t;
 
-typedef struct {
-	double degrees;
-	rgpstk_nmea_direction_t direction;
-} rgpstk_nmea_coordinate_t;
-
-bool	rgpstk_nmea_is_direction(uint8_t);
-bool	rgpstk_nmea_direction_is_lat(rgpstk_nmea_direction_t);
-bool	rgpstk_nmea_direction_is_long(rgpstk_nmea_direction_t);
 bool	rgpstk_nmea_message_has_lat_long(const rgpstk_nmea_message_t *);
-int	rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *, rgpstk_nmea_coordinate_t *, rgpstk_nmea_coordinate_t *);
+int	rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *, rgpstk_geo_coordinate_t *, rgpstk_geo_coordinate_t *);
 int	rgpstk_nmea_message_load(const char *, uint8_t, rgpstk_nmea_message_t *);
 void	rgpstk_nmea_message_start_end_index(const char *, int8_t, int8_t *, int8_t *);
 void	rgpstk_nmea_message_free(rgpstk_nmea_message_t *);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* RGPSTK_NMEA_H */

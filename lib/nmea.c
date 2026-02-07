@@ -18,9 +18,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "nmea.h"
+#include "geo.h"
+#include "geo_defs.h"
 
-#include <stdio.h>
+#include "nmea.h"
 
 static char nmea_talker[][2] = {
 	"GP",
@@ -108,48 +109,17 @@ nmea_sentence_index2enum(uint8_t index)
 }
 
 inline bool
-rgpstk_nmea_is_direction(uint8_t dir)
-{
-	bool res;
-
-	switch (dir) {
-	case RGPSTK_NMEA_NORTH:
-	case RGPSTK_NMEA_SOUTH:
-	case RGPSTK_NMEA_EAST:
-	case RGPSTK_NMEA_WEST:
-		res = true;
-		break;
-	default:
-		res = false;
-	}
-
-	return (res);
-}
-
-inline bool
-rgpstk_nmea_direction_is_lat(rgpstk_nmea_direction_t direction)
-{
-	return (direction == RGPSTK_NMEA_NORTH || direction == RGPSTK_NMEA_SOUTH);
-}
-
-inline bool
-rgpstk_nmea_direction_is_long(rgpstk_nmea_direction_t direction)
-{
-	return (direction == RGPSTK_NMEA_EAST || direction == RGPSTK_NMEA_WEST);
-}
-
-inline bool
 rgpstk_nmea_message_has_lat_long(const rgpstk_nmea_message_t *msg)
 {
 	return (msg->nmea_sentence == RGPSTK_NMEA_SENTENCE_GEO_LAT_LONG);
 }
 
 int
-rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *msg, rgpstk_nmea_coordinate_t *lat, rgpstk_nmea_coordinate_t *lon)
+rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *msg, rgpstk_geo_coordinate_t *lat, rgpstk_geo_coordinate_t *lon)
 {
 	double geo_lat, geo_long;
 	int res = 0;
-	rgpstk_nmea_direction_t dir_lat, dir_long;
+	rgpstk_geo_direction_t dir_lat, dir_long;
 	char *end_ptr = NULL;
 
 	if (!rgpstk_nmea_message_has_lat_long(msg) || msg->nmea_fields_count != 8) {
@@ -162,28 +132,28 @@ rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *msg, rgpstk_nmea_coord
 		res = -1;
 		goto err;
 	}
-	if (msg->nmea_fields[1].len != 1 || !rgpstk_nmea_is_direction(msg->nmea_fields[1].value[0])) {
+	if (msg->nmea_fields[1].len != 1 || !rgpstk_geo_is_direction(msg->nmea_fields[1].value[0])) {
 		res = -1;
 		goto err;
 	}
-	dir_lat = (rgpstk_nmea_direction_t)msg->nmea_fields[1].value[0];
-	printf("C\n");
+	dir_lat = (rgpstk_geo_direction_t)msg->nmea_fields[1].value[0];
+
 	geo_long = strtod(msg->nmea_fields[2].value, &end_ptr);
 	if (end_ptr == NULL) {
 		res = -1;
 		goto err;
 	}
-	if (msg->nmea_fields[3].len != 1 || !rgpstk_nmea_is_direction(msg->nmea_fields[3].value[0])) {
+	if (msg->nmea_fields[3].len != 1 || !rgpstk_geo_is_direction(msg->nmea_fields[3].value[0])) {
 		res = -1;
 		goto err;
 	}
-	dir_long = (rgpstk_nmea_direction_t)msg->nmea_fields[3].value[0];
-	printf("D\n");
-	if (!rgpstk_nmea_direction_is_lat(dir_lat) || !rgpstk_nmea_direction_is_long(dir_long)) {
+	dir_long = (rgpstk_geo_direction_t)msg->nmea_fields[3].value[0];
+
+	if (!rgpstk_geo_direction_is_lat(dir_lat) || !rgpstk_geo_direction_is_long(dir_long)) {
 		res = -1;
 		goto err;
 	}
-	printf("E\n");
+
 	/* TODO validate checksum */
 
 	lat->degrees = geo_lat;

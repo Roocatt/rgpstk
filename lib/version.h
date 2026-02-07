@@ -13,34 +13,21 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
+#ifndef RGPSTK_VERSION_H
+#define RGPSTK_VERSION_H
 
-#include "../lib/nmea.h"
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-int
-main(void)
-{
-	rgpstk_nmea_message_t message;
-	rgpstk_nmea_coordinate_t lat = {0}, lon = {0};
-	int res;
-	char nmea_gll[] = "$GPGLL,3953.88008971,N,10506.75318910,W,034138.00,A,D*7A\r\n";
+int	rgpstk_version_major(void);
+int	rgpstk_version_minor(void);
+int	rgpstk_version_patch(void);
 
-	res = rgpstk_nmea_message_load(nmea_gll, sizeof(nmea_gll) - 1, &message);
-	if (res) {
-		printf("error loading message\n");
-		goto end;
-	}
+void	rgpstk_print_version(void);
 
-	if (!rgpstk_nmea_message_has_lat_long(&message)) {
-		printf("rgpstk_nmea_message_has_lat_long returned false\n");
-		res = 1;
-		goto end;
-	}
-
-	res = rgpstk_nmea_gps_get_lat_long(&message, &lat, &lon);
-	if (res)
-		printf("error reading lat/long\n");
-
-end:
-	return (res);
+#if defined(__cplusplus)
 }
+#endif
+
+#endif /* RGPSTK_VERSION_H */
