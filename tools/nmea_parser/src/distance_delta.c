@@ -52,6 +52,7 @@ distance_delta_read_loop(void)
 				continue;
 			if (distance_delta(&message, &distance))
 				printf("distance delta: %f\n", distance);
+			rgpstk_nmea_message_free(&message);
 		}
 	}
 }
