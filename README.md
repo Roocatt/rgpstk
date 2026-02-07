@@ -3,6 +3,14 @@
 A helpful library and tool collection for handling GPS related tasks.
 More tools and functionality will be added over time.
 
+## Notable Features and Functionality
+
+ - NMEA 0183 handling
+ - Geographic Distance Calculation
+   - Vincenty's Formulae
+   - Haversine Formula
+   - Spherical Law of Cosines
+
 ## Documentation
 
 Documentation is available on the
@@ -23,4 +31,5 @@ make test
 ```
 
 # Licence
+
 This software is available under the ISC licence.
