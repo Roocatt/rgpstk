@@ -24,8 +24,24 @@ add_library(rgpstk STATIC lib/nmea.c lib/nmea.h
 	tools/nmea_parser/src/main.c
 	lib/version.c lib/version.h
 	lib/geo.c lib/geo.h
+	test/tests/test_version.c
 )
 target_link_libraries(rgpstk PRIVATE m)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Coverage")
+	add_custom_target(generate_coverage_report
+		COMMAND llvm-profdata merge "-output=${CMAKE_SOURCE_DIR}/coverage/test_run.profdata" "${CMAKE_SOURCE_DIR}/coverage/test_run.profraw"
+		COMMAND llvm-cov show "${CMAKE_SOURCE_DIR}/build/test_runner"  "-instr-profile=${CMAKE_SOURCE_DIR}/coverage/test_run.profdata" -format=text "-output-dir=${CMAKE_SOURCE_DIR}/coverage_report/test_run")
+endif ()
+
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY
+	ADDITIONAL_CLEAN_FILES
+	"${CMAKE_SOURCE_DIR}/coverage"
+	"${CMAKE_SOURCE_DIR}/coverage_report"
+)
+
+include(cmake/coverage.cmake)
+handle_coverage(rgpstk)
 
 add_subdirectory(tools)
 add_subdirectory(test)

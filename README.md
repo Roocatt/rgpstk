@@ -1,5 +1,8 @@
 # Roos's GPS Tool Kit (RGPSTK)
 
+[![Build and Test](https://github.com/Roocatt/rgpstk/actions/workflows/workflow.yml/badge.svg)](https://github.com/Roocatt/rgpstk/actions/workflows/workflow.yml)
+![GitHub Licence](https://img.shields.io/github/license/Roocatt/piMCP2515?label=licence)
+
 A helpful library and tool collection for handling GPS related tasks.
 More tools and functionality will be added over time.
 

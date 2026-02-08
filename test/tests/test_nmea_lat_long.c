@@ -19,7 +19,7 @@
 #include "../lib/nmea.h"
 
 int
-main(void)
+test_nmea_lat_long(void)
 {
 	rgpstk_nmea_message_t message;
 	rgpstk_geo_coordinate_t lat = {0}, lon = {0};

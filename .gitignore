@@ -2,6 +2,12 @@
 DartConfiguration.tcl
 build/
 
+# Coverage
+*.profraw
+*.profdata
+coverage_report/*
+coverage/*
+
 ### C++ template
 # Prerequisites
 *.d

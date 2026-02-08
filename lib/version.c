@@ -34,19 +34,19 @@
 extern char *program_invocation_short_name;
 #endif
 
-inline int
+int
 rgpstk_version_major(void)
 {
 	return (RGPSTK_VERSION_MAJOR);
 }
 
-inline int
+int
 rgpstk_version_minor(void)
 {
 	return (RGPSTK_VERSION_MINOR);
 }
 
-inline int
+int
 rgpstk_version_patch(void)
 {
 	return (RGPSTK_VERSION_PATCH);
