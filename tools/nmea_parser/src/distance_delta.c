@@ -38,6 +38,8 @@ distance_delta_read_loop(void)
 
 	for (;;) {
 		c = (char)fgetc(stdin);
+		if (c == EOF)
+			break;
 		if (c == RGPSTK_NMEA_CHAR_START || c == RGPSTK_NMEA_CHAR_ENCAPSULATION_START) {
 			i = 0;
 			memset(buffer, 0, BUFFER_SIZE);

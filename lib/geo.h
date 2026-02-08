@@ -19,18 +19,29 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "geo_defs.h"
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 #define RGPSTK_GEO_EARTH_RADIUS_M 637100.0
 #define RGPSTK_GEO_WGS84_SEMI_MAJOR_AXIS 6378137.0
 #define RGPSTK_GEO_WGS84_FLATTENING (1.0 / 298.257223563)
 #define RGPSTK_GEO_WGS84_SEMI_MINOR_AXIS (RGPSTK_GEO_WGS84_SEMI_MAJOR_AXIS * (1.0 - RGPSTK_GEO_WGS84_FLATTENING))
 
 #define RGPSTK_GEO_L_CONVERGE_THRESHOLD 1e-12
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+typedef enum {
+	RGPSTK_GEO_DIR_UNKNOWN = '\0',
+	RGPSTK_GEO_DIR_NORTH = 'N',
+	RGPSTK_GEO_DIR_SOUTH = 'S',
+	RGPSTK_GEO_DIR_EAST = 'E',
+	RGPSTK_GEO_DIR_WEST = 'W',
+} rgpstk_geo_direction_t;
+
+typedef struct {
+	double degrees;
+	rgpstk_geo_direction_t direction;
+} rgpstk_geo_coordinate_t;
 
 double	rgpstk_geo_calculate_distance(const rgpstk_geo_coordinate_t *, const rgpstk_geo_coordinate_t *,
    const rgpstk_geo_coordinate_t *, const rgpstk_geo_coordinate_t *);

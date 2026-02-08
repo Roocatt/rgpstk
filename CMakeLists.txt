@@ -25,7 +25,6 @@ add_library(rgpstk STATIC lib/nmea.c lib/nmea.h
 	lib/version.c lib/version.h
 	lib/geo.c
 	lib/geo.h
-	lib/geo_defs.h
 )
 
 add_subdirectory(tools)

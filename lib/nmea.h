@@ -18,8 +18,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-
-#include "geo_defs.h"
+#include <geo.h>
 
 #define RGPSTK_NMEA_MAX_LEN 82
 
@@ -51,15 +50,32 @@ typedef enum {
 	RGPSTK_NMEA_TALKER_QZSS,
 } rgpstk_nmea_talker_t;
 
+/* Aliases to use rgpstk_nmea_talker_t with the char sequence instead of a description as the name. */
+#define RGPSTK_NMEA_TALKER_GP GGPSTK_NMEA_TALKER_GPS
+#define RGPSTK_NMEA_TALKER_GA RGPSTK_NMEA_TALKER_GALILEO
+#define RGPSTK_NMEA_TALKER_GB RGPSTK_NMEA_TALKER_BEIDOU
+#define RGPSTK_NMEA_TALKER_BD RGPSTK_NMEA_TALKER_BEIDOU
+#define RGPSTK_NMEA_TALKER_GL RGPSTK_NMEA_TALKER_GLONASS
+#define RGPSTK_NMEA_TALKER_GN RGPSTK_NMEA_TALKER_GENERIC_GNSS
+#define RGPSTK_NMEA_TALKER_GQ RGPSTK_NMEA_TALKER_QZSS
+
 typedef enum {
 	RGPSTK_NMEA_SENTENCE_UNKNOWN,
-	RGPSTK_NMEA_SENTENCE_GPS_FD,
+	RGPSTK_NMEA_SENTENCE_GPS_FIX_DATA,
 	RGPSTK_NMEA_SENTENCE_GEO_LAT_LONG,
 	RGPSTK_NMEA_SENTENCE_GNSS_DOP,
 	RGPSTK_NMEA_SENTENCE_GNSS_SAT_IN_VIEW,
 	RGPSTK_NMEA_SENTENCE_REC_MIN,
 	RGPSTK_NMEA_SENTENCE_GROUND_VEL_COURSE,
 } rgpstk_nmea_sentence_t;
+
+/* Aliases to use rgpstk_nmea_sentence_t with the char sequence in the name instead of a description as the name. */
+#define RGPSTK_NMEA_SENTENCE_GGA RGPSTK_NMEA_SENTENCE_GPS_FIX_DATA
+#define RGPSTK_NMEA_SENTENCE_GLL RGPSTK_NMEA_SENTENCE_GEO_LAT_LONG
+#define RGPSTK_NMEA_SENTENCE_GSA RGPSTK_NMEA_SENTENCE_GNSS_DOP
+#define RGPSTK_NMEA_SENTENCE_GSV RGPSTK_NMEA_SENTENCE_GNSS_SAT_IN_VIEW
+#define RGPSTK_NMEA_SENTENCE_RMC RGPSTK_NMEA_SENTENCE_REC_MIN
+#define RGPSTK_NMEA_SENTENCE_VTG RGPSTK_NMEA_SENTENCE_GROUND_VEL_COURSE
 
 typedef struct {
 	uint8_t len;
@@ -72,10 +88,16 @@ typedef struct {
 	uint8_t nmea_fields_count;
 	rgpstk_nmea_message_field_t *nmea_fields;
 	bool nmea_checksum; /* if true, last field holds checksum */
+	bool nmea_valid; /* if valid checksum. Always true from `rgpstk_nmea_message_load` if no checksum is present */
 } rgpstk_nmea_message_t;
 
 
+inline double	rgpstk_nmea_dm2d(double);
+
+int	rgpstk_checksum_calculate(const char *, uint8_t, uint8_t *);
 bool	rgpstk_nmea_message_has_lat_long(const rgpstk_nmea_message_t *);
+int	rgpstk_nmea_gps_get_lat_long_gga(const rgpstk_nmea_message_t *, rgpstk_geo_coordinate_t *, rgpstk_geo_coordinate_t *);
+int	rgpstk_nmea_gps_get_lat_long_gll(const rgpstk_nmea_message_t *, rgpstk_geo_coordinate_t *, rgpstk_geo_coordinate_t *);
 int	rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *, rgpstk_geo_coordinate_t *, rgpstk_geo_coordinate_t *);
 int	rgpstk_nmea_message_load(const char *, uint8_t, rgpstk_nmea_message_t *);
 void	rgpstk_nmea_message_start_end_index(const char *, int8_t, int8_t *, int8_t *);

@@ -38,7 +38,7 @@ main(int argc, char **argv)
 	int res = 0, opt;
 	bool bad_cfg = false;
 
-	while ((opt = getopt(argc, argv, "dt:hv")) != -1) {
+	while ((opt = getopt(argc, argv, "dhv")) != -1) {
 		switch (opt) {
 		case 'd':
 			bad_cfg = action_check(&action, DISTANCE_DELTA);

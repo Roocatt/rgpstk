@@ -13,13 +13,14 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "geo.h"
-#include "geo_defs.h"
 
 #include "nmea.h"
 
@@ -78,13 +79,13 @@ nmea_talker_index2enum(uint8_t index)
 static rgpstk_nmea_sentence_t	nmea_sentence_index2enum(uint8_t);
 
 static rgpstk_nmea_sentence_t
-nmea_sentence_index2enum(uint8_t index)
+nmea_sentence_index2enum(const uint8_t index)
 {
 	rgpstk_nmea_sentence_t sentence;
 
 	switch(index) {
 	case 0:
-		sentence = RGPSTK_NMEA_SENTENCE_GPS_FD;
+		sentence = RGPSTK_NMEA_SENTENCE_GPS_FIX_DATA;
 		break;
 	case 1:
 		sentence = RGPSTK_NMEA_SENTENCE_GEO_LAT_LONG;
@@ -108,21 +109,116 @@ nmea_sentence_index2enum(uint8_t index)
 	return (sentence);
 }
 
-inline bool
+int
+rgpstk_checksum_calculate(const char *buffer, uint8_t len, uint8_t *checksum_res)
+{
+	int res = 0;
+	uint8_t i, checksum_calc = 0;
+
+	i = 1;/* Start after the '$' or '!' char */
+
+	while (buffer[i] != RGPSTK_NMEA_CHAR_CHECKSUM_DELIMITER && buffer[i] != RGPSTK_NMEA_CHAR_END) {
+		if (buffer[i] == '\0' || i >= len || i >= RGPSTK_NMEA_MAX_LEN) {
+			res = -1;
+			goto end;
+		}
+		checksum_calc ^= buffer[i];
+		i++;
+	}
+
+	*checksum_res = checksum_calc;
+
+end:
+	return (res);
+}
+
+double
+rgpstk_nmea_dm2d(const double dm)
+{
+	double d, minutes;
+	int deg;
+
+	deg = ((int)dm) / 100;
+	minutes = (dm - (deg * 100));
+
+	d = deg + (minutes / 60.0);
+
+	return (d);
+}
+
+bool
 rgpstk_nmea_message_has_lat_long(const rgpstk_nmea_message_t *msg)
 {
-	return (msg->nmea_sentence == RGPSTK_NMEA_SENTENCE_GEO_LAT_LONG);
+	return (msg->nmea_sentence == RGPSTK_NMEA_SENTENCE_GEO_LAT_LONG
+	    || msg->nmea_sentence == RGPSTK_NMEA_SENTENCE_GPS_FIX_DATA);
 }
 
 int
-rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *msg, rgpstk_geo_coordinate_t *lat, rgpstk_geo_coordinate_t *lon)
+rgpstk_nmea_gps_get_lat_long_gga(const rgpstk_nmea_message_t *msg, rgpstk_geo_coordinate_t *lat, rgpstk_geo_coordinate_t *lon)
 {
 	double geo_lat, geo_long;
 	int res = 0;
 	rgpstk_geo_direction_t dir_lat, dir_long;
 	char *end_ptr = NULL;
 
-	if (!rgpstk_nmea_message_has_lat_long(msg) || msg->nmea_fields_count != 8) {
+	if (!(msg->nmea_fields_count == 14 || (msg->nmea_checksum && msg->nmea_fields_count == 15))
+	    || msg->nmea_sentence != RGPSTK_NMEA_SENTENCE_GPS_FIX_DATA || !msg->nmea_valid) {
+		res = -1;
+		goto err;
+	}
+
+	/* if the fix quality field is `0` indicating invalid, then just return */
+	if (msg->nmea_fields[5].len != 1 || msg->nmea_fields[5].value[0] == '0') {
+		res = 1;
+		goto err;
+	}
+
+	geo_lat = strtod(msg->nmea_fields[1].value, &end_ptr);
+	if (end_ptr == NULL) {
+		res = -1;
+		goto err;
+	}
+	if (msg->nmea_fields[2].len != 1 || !rgpstk_geo_is_direction(msg->nmea_fields[2].value[0])) {
+		res = -1;
+		goto err;
+	}
+	dir_lat = (rgpstk_geo_direction_t)msg->nmea_fields[2].value[0];
+
+	geo_long = strtod(msg->nmea_fields[3].value, &end_ptr);
+	if (end_ptr == NULL) {
+		res = -1;
+		goto err;
+	}
+	if (msg->nmea_fields[4].len != 1 || !rgpstk_geo_is_direction(msg->nmea_fields[4].value[0])) {
+		res = -1;
+		goto err;
+	}
+	dir_long = (rgpstk_geo_direction_t)msg->nmea_fields[4].value[0];
+
+	if (!rgpstk_geo_direction_is_lat(dir_lat) || !rgpstk_geo_direction_is_long(dir_long)) {
+		res = -1;
+		goto err;
+	}
+
+	lat->degrees = rgpstk_nmea_dm2d(geo_lat);
+	lat->direction = dir_lat;
+	lon->degrees = rgpstk_nmea_dm2d(geo_long);
+	lon->direction = dir_long;
+
+err:
+	return (res);
+}
+
+int
+rgpstk_nmea_gps_get_lat_long_gll(const rgpstk_nmea_message_t *msg, rgpstk_geo_coordinate_t *lat, rgpstk_geo_coordinate_t *lon)
+{
+	double geo_lat, geo_long;
+	int res = 0;
+	rgpstk_geo_direction_t dir_lat, dir_long;
+	char *end_ptr = NULL;
+
+	if (!(msg->nmea_fields_count == 7 || (msg->nmea_checksum && msg->nmea_fields_count == 8))
+	    || msg->nmea_sentence != RGPSTK_NMEA_SENTENCE_GEO_LAT_LONG || !msg->nmea_valid) {
 		res = -1;
 		goto err;
 	}
@@ -154,14 +250,37 @@ rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *msg, rgpstk_geo_coordi
 		goto err;
 	}
 
-	/* TODO validate checksum */
-
-	lat->degrees = geo_lat;
+	lat->degrees = rgpstk_nmea_dm2d(geo_lat);
 	lat->direction = dir_lat;
-	lon->degrees = geo_long;
+	lon->degrees = rgpstk_nmea_dm2d(geo_long);
 	lon->direction = dir_long;
 
-err:
+	err:
+		return (res);
+}
+
+int
+rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *msg, rgpstk_geo_coordinate_t *lat, rgpstk_geo_coordinate_t *lon)
+{
+	int res;
+
+	if (!rgpstk_nmea_message_has_lat_long(msg)) {
+		res = -1;
+		goto end;
+	}
+
+	switch (msg->nmea_sentence) {
+	case RGPSTK_NMEA_SENTENCE_GPS_FIX_DATA:
+		res = rgpstk_nmea_gps_get_lat_long_gga(msg, lat, lon);
+		break;
+	case RGPSTK_NMEA_SENTENCE_GEO_LAT_LONG:
+		res = rgpstk_nmea_gps_get_lat_long_gll(msg, lat, lon);
+		break;
+	default:
+		res = -1;
+	}
+
+end:
 	return (res);
 }
 
@@ -171,7 +290,8 @@ rgpstk_nmea_message_load(const char *buffer, uint8_t len, rgpstk_nmea_message_t 
 	rgpstk_nmea_talker_t talker = RGPSTK_NMEA_TALKER_UNKNOWN;
 	rgpstk_nmea_sentence_t sentence = RGPSTK_NMEA_SENTENCE_UNKNOWN;
 	int res = 0;
-	uint8_t i, j, num_fields = 1, *field_lens, cur_field_len = 0, cur_field_index = 0;
+	uint8_t i, j, num_fields = 1, *field_lens, cur_field_len = 0, cur_field_index = 0, checksum_calc,
+	    checksum_from_buffer;
 	bool check_sum = false;
 
 	memset(msg, 0, sizeof(rgpstk_nmea_message_t));
@@ -204,9 +324,12 @@ rgpstk_nmea_message_load(const char *buffer, uint8_t len, rgpstk_nmea_message_t 
 		if (!strncmp(nmea_talker[i], buffer + 1, 2))
 			talker = nmea_talker_index2enum(i);
 
-	for (i = 1; i < (uint8_t)(sizeof(nmea_sentence) / sizeof(nmea_sentence[0])); i++)
-		if (!strncmp(nmea_sentence[i], buffer + 3, 3))
+	for (i = 0; i < (uint8_t)(sizeof(nmea_sentence) / sizeof(nmea_sentence[0])); i++) {
+		if (!strncmp(nmea_sentence[i], buffer + 3, 3)) {
 			sentence = nmea_sentence_index2enum(i);
+			break;
+		}
+	}
 
 	if (buffer[6] != RGPSTK_NMEA_CHAR_FIELD_DELIMITER) {
 		res = -1;
@@ -287,6 +410,20 @@ rgpstk_nmea_message_load(const char *buffer, uint8_t len, rgpstk_nmea_message_t 
 			cur_field_len++;
 		}
 	}
+
+	if (check_sum && rgpstk_checksum_calculate(buffer, len, &checksum_calc) == 0) {
+		if (msg->nmea_fields[msg->nmea_fields_count - 1].len == 2) {
+			/* Easiest error check for `strtol` is `errno`, but it does not set it to `0` on success. There
+			 * is also no guarantee that it will be zero before `strtol` is called. So, we set it to zero
+			 * before to be sure and check after.
+			 */
+			errno = 0;
+			checksum_from_buffer = (uint8_t)strtol(msg->nmea_fields[msg->nmea_fields_count - 1].value, NULL, 16);
+			msg->nmea_valid = (errno == 0 && checksum_from_buffer == checksum_calc);
+		} else
+			msg->nmea_valid = false;
+	} else
+		msg->nmea_valid = true;
 
 err:
 	return (res);
