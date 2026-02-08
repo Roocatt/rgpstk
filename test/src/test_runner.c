@@ -15,7 +15,7 @@
 
 #include <stdio.h>
 
-#include "tests/tests.h"
+#include "../tests/tests.h"
 
 #define RUN_TEST(test) if ((res = test()) != 0) { printf(#test " failed: %d\n", res); res_final += res; }
 
