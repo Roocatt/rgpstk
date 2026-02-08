@@ -30,6 +30,10 @@
 #define RGPSTK_VERSION_PATCH 0
 #endif
 
+#ifdef __linux__
+extern char *program_invocation_short_name;
+#endif
+
 inline int
 rgpstk_version_major(void)
 {
@@ -53,9 +57,15 @@ rgpstk_print_version(void)
 {
 	const char *program_name;
 
+#if defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__) || defined(__APPLE__)
 	program_name = getprogname();
 	if (program_name == NULL || strlen(program_name) < 6 || strncmp(program_name, "rgpstk", 6) != 0)
 		program_name = "rgpstk lib";
+#elif defined(__linux__)
+	program_name = program_invocation_short_name;
+#else
+	program_name = "RGPSTK";
+#endif
 
 	printf("Roos's GPS Tool Kit - %s\nv%d.%d.%d\n", program_name, RGPSTK_VERSION_MAJOR, RGPSTK_VERSION_MINOR,
 	    RGPSTK_VERSION_PATCH);
