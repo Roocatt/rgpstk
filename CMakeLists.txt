@@ -23,9 +23,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
 add_library(rgpstk STATIC lib/nmea.c lib/nmea.h
 	tools/nmea_parser/src/main.c
 	lib/version.c lib/version.h
-	lib/geo.c
-	lib/geo.h
+	lib/geo.c lib/geo.h
 )
+target_link_libraries(rgpstk PRIVATE m)
 
 add_subdirectory(tools)
 add_subdirectory(test)
