@@ -44,7 +44,9 @@ else ()
 	set_target_properties(rgpstk_shared PROPERTIES OUTPUT_NAME "rgpstk")
 	target_link_libraries(rgpstk_static PRIVATE m)
 	target_link_libraries(rgpstk_shared PRIVATE m)
+
 	include(cmake/coverage.cmake)
+	handle_coverage(rgpstk_objects)
 	handle_coverage(rgpstk_static)
 	handle_coverage(rgpstk_shared)
 
