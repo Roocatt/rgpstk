@@ -19,6 +19,7 @@ jobs:
       - name: Run Tests
         run: make test
       - name: Collect Test Log
+        if: ${{ failure() }}
         run: cat "/home/runner/work/rgpstk/rgpstk/Testing/Temporary/LastTest.log"
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
