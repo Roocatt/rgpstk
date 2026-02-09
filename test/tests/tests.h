@@ -21,6 +21,7 @@ extern "C" {
 #endif
 
 int	test_geo_calc(void);
+int	test_nmea_invalid(void);
 int	test_nmea_lat_long(void);
 int	test_version(void);
 int	test_geo_misc(void);

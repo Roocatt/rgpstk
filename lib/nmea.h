@@ -102,8 +102,6 @@ int	rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *, rgpstk_geo_coord
 int	rgpstk_nmea_message_load(const char *, uint8_t, rgpstk_nmea_message_t *);
 void	rgpstk_nmea_message_free(rgpstk_nmea_message_t *);
 
-void	rgpstk_nmea_message_start_end_index(const char *, int8_t, int8_t *, int8_t *);
-
 #if defined(__cplusplus)
 }
 #endif

@@ -109,6 +109,31 @@ nmea_sentence_index2enum(const uint8_t index)
 	return (sentence);
 }
 
+/* float parsers skip invalid chars. I don't think that's good enough, so ensure no invalid chars in string. */
+static bool	valid_float_field(rgpstk_nmea_message_field_t);
+
+static bool
+valid_float_field(rgpstk_nmea_message_field_t field)
+{
+	uint8_t i;
+	bool decimal = false, res = true;
+
+	for (i = (field.len != 0 && field.value[0] == '-') ? 1 : 0; i < field.len; i++) {
+		if (field.value[i] == '.') {
+			if (decimal) {
+				res = false;
+				i = field.len;
+			} else
+				decimal = true;
+		} else if (field.value[i] < '0' || field.value[i] > '9') {
+			res = false;
+			i = field.len;
+		}
+	}
+
+	return (res);
+}
+
 int
 rgpstk_checksum_calculate(const char *buffer, uint8_t len, uint8_t *checksum_res)
 {
@@ -162,7 +187,8 @@ rgpstk_nmea_gps_get_lat_long_gga(const rgpstk_nmea_message_t *msg, rgpstk_geo_co
 	char *end_ptr = NULL;
 
 	if (!(msg->nmea_fields_count == 14 || (msg->nmea_checksum && msg->nmea_fields_count == 15))
-	    || msg->nmea_sentence != RGPSTK_NMEA_SENTENCE_GPS_FIX_DATA || !msg->nmea_valid) {
+	    || msg->nmea_sentence != RGPSTK_NMEA_SENTENCE_GPS_FIX_DATA || !msg->nmea_valid
+	    || !valid_float_field(msg->nmea_fields[1]) || !valid_float_field(msg->nmea_fields[3])) {
 		res = -1;
 		goto err;
 	}
@@ -218,7 +244,8 @@ rgpstk_nmea_gps_get_lat_long_gll(const rgpstk_nmea_message_t *msg, rgpstk_geo_co
 	char *end_ptr = NULL;
 
 	if (!(msg->nmea_fields_count == 7 || (msg->nmea_checksum && msg->nmea_fields_count == 8))
-	    || msg->nmea_sentence != RGPSTK_NMEA_SENTENCE_GEO_LAT_LONG || !msg->nmea_valid) {
+	    || msg->nmea_sentence != RGPSTK_NMEA_SENTENCE_GEO_LAT_LONG || !msg->nmea_valid
+	    || !valid_float_field(msg->nmea_fields[0]) || !valid_float_field(msg->nmea_fields[2])) {
 		res = -1;
 		goto err;
 	}
@@ -427,22 +454,6 @@ rgpstk_nmea_message_load(const char *buffer, uint8_t len, rgpstk_nmea_message_t 
 
 err:
 	return (res);
-}
-
-void
-rgpstk_nmea_message_start_end_index(const char *msg_buffer, int8_t len, int8_t *start_index, int8_t *end_index)
-{
-	int8_t i;
-
-	*start_index = -1;
-	*end_index = -1;
-
-	for (i = 0; i < len; ++i) {
-		if (msg_buffer[i] == RGPSTK_NMEA_CHAR_START || msg_buffer[i] == RGPSTK_NMEA_CHAR_ENCAPSULATION_START)
-			*start_index = i;
-		if (msg_buffer[i] == RGPSTK_NMEA_CHAR_END)
-			*end_index = i;
-	}
 }
 
 void
