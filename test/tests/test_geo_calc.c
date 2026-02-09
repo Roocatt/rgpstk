@@ -40,8 +40,6 @@ test_geo_calc(void)
 		goto end;
 	}
 
-	printf("%02x %02x, %d, %d\n", message2.nmea_talker, message2.nmea_sentence, message2.nmea_fields_count, message1.nmea_valid);
-
 	res = rgpstk_nmea_gps_get_lat_long(&message1, &lat_a, &lon_a);
 	if (res) {
 		printf("rgpstk_nmea_gps_get_lat_long for GGA #1 returned %d\n", res);

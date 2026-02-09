@@ -21,7 +21,7 @@ int
 test_nmea_invalid (void)
 {
 	rgpstk_nmea_message_t message = {0};
-	int test_res, res;
+	int test_res, res = 0;
 	rgpstk_geo_coordinate_t lat = {0}, lon = {0};
 	char nmea_bad_checksum[] = "$GPGLL,3953.88008971,N,10506.75318910,W,034138.00,A,D*A7\r\n";
 	char nmea_no_checksum[] = "$GPGLL,3953.88008971,N,10506.75318910,W,034138.00,A,D\r\n";
