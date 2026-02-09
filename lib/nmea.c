@@ -175,28 +175,28 @@ rgpstk_nmea_gps_get_lat_long_gga(const rgpstk_nmea_message_t *msg, rgpstk_geo_co
 
 	geo_lat = strtod(msg->nmea_fields[1].value, &end_ptr);
 	if (end_ptr == NULL) {
-		res = -1;
+		res = -2;
 		goto err;
 	}
 	if (msg->nmea_fields[2].len != 1 || !rgpstk_geo_is_direction(msg->nmea_fields[2].value[0])) {
-		res = -1;
+		res = -3;
 		goto err;
 	}
 	dir_lat = (rgpstk_geo_direction_t)msg->nmea_fields[2].value[0];
 
 	geo_long = strtod(msg->nmea_fields[3].value, &end_ptr);
 	if (end_ptr == NULL) {
-		res = -1;
+		res = -4;
 		goto err;
 	}
 	if (msg->nmea_fields[4].len != 1 || !rgpstk_geo_is_direction(msg->nmea_fields[4].value[0])) {
-		res = -1;
+		res = -5;
 		goto err;
 	}
 	dir_long = (rgpstk_geo_direction_t)msg->nmea_fields[4].value[0];
 
 	if (!rgpstk_geo_direction_is_lat(dir_lat) || !rgpstk_geo_direction_is_long(dir_long)) {
-		res = -1;
+		res = -6;
 		goto err;
 	}
 

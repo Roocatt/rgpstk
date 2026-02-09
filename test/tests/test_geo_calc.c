@@ -1,5 +1,5 @@
 /* Copyright 2026 Roos Catling-Tate
-*
+ *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with or
  * without fee is hereby granted, provided that the above copyright notice and this permission
  * notice appear in all copies.
@@ -26,23 +26,32 @@ test_geo_calc(void)
 	int res = 0;
 
 	char nmea_gga1[] = "$GPGGA,092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,*76\r\n";
-	char nmea_gga2[] = "$GPGGA,092750.000,5321.6802,N,01630.3372,W,1,8,1.03,61.7,M,55.2,M,,*76\r\n";
+	char nmea_gga2[] = "$GPGGA,092750.000,5271.6902,N,00760.3382,W,1,8,1.03,61.7,M,55.2,M,,*78\r\n";
 
-	res = rgpstk_nmea_message_load(nmea_gga1, sizeof(nmea_gga1), &message1);
-	if (res)
-		goto end;
-	res = rgpstk_nmea_message_load(nmea_gga2, sizeof(nmea_gga2), &message2);
+	res = rgpstk_nmea_message_load(nmea_gga1, sizeof(nmea_gga1) - 1, &message1);
 	if (res) {
+		printf("rgpstk_nmea_message_load for GGA #1 returned %d\n", res);
+		goto end;
+	}
+	res = rgpstk_nmea_message_load(nmea_gga2, sizeof(nmea_gga2) - 1, &message2);
+	if (res) {
+		printf("rgpstk_nmea_message_load for GGA #2 returned %d\n", res);
 		rgpstk_nmea_message_free(&message1);
 		goto end;
 	}
 
+	printf("%02x %02x, %d, %d\n", message2.nmea_talker, message2.nmea_sentence, message2.nmea_fields_count, message1.nmea_valid);
+
 	res = rgpstk_nmea_gps_get_lat_long(&message1, &lat_a, &lon_a);
-	if (res)
+	if (res) {
+		printf("rgpstk_nmea_gps_get_lat_long for GGA #1 returned %d\n", res);
 		goto err;
+	}
 	res = rgpstk_nmea_gps_get_lat_long(&message2, &lat_b, &lon_b);
-	if (res)
+	if (res) {
+		printf("rgpstk_nmea_gps_get_lat_long for GGA #2 returned %d\n", res);
 		goto err;
+	}
 
 	printf("rgpstk_geo_calculate_distance %f\n", rgpstk_geo_calculate_distance(&lat_a, &lon_a, &lat_b, &lon_b));
 	printf("rgpstk_geo_calculate_distance_haversine %f\n",

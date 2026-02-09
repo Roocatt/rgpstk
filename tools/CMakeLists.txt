@@ -1,1 +1,2 @@
 add_subdirectory(nmea_parser)
+add_subdirectory(nmea_checksum)
