@@ -27,13 +27,23 @@ be cloned using git from `https://github.com/Roocatt/rgpstk.wiki.git`.
 # Generate build files with CMake
 cmake .
 
+# Optional: Instead of the above, add -DUSE_PICO_LIB=1 to load the
+# Raspberry Pi Pico C SDK and compile for Pico devices. This requires
+# the `PICO_SDK_PATH` environment variable to be set.
+#
+# cmake -DUSE_PICO_LIB=1 . 
+
 # Build
 make
 
 # Optional: run tests
 make test
+
+# Install library
+make install
 ```
 
 # Licence
 
-This software is available under the ISC licence.
+This software is available under the ISC licence. This is a BSD-like
+licence suitable for use in closed-source and/or commercial projects.

@@ -8,3 +8,4 @@ add_executable(rgpstk_nmea_parser src/main.c
 	src/distance_delta.c src/distance_delta.h
 )
 target_link_libraries(rgpstk_nmea_parser PRIVATE rgpstk)
+install(TARGETS rgpstk_nmea_parser RUNTIME DESTINATION bin)
