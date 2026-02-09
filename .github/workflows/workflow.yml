@@ -23,6 +23,7 @@ jobs:
     steps:
       - name: Install dependencies
         run: sudo apt install -y cmake build-essential clang
+      - uses: actions/checkout@v4
       - name: CMake
         run: cmake -DCMAKE_BUILD_TYPE=Coverage .
       - name: Build Project
