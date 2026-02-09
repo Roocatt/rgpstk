@@ -21,7 +21,7 @@
 
 #include "distance_delta.h"
 
-enum action : char {
+enum action {
 	UNKNOWN = '?',
 	DISTANCE_DELTA = 'd',
 	HELP = 'h',

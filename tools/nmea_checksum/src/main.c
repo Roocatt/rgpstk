@@ -24,7 +24,7 @@
 int
 main(int argc, char *argv[])
 {
-	int res, arg_len, validation_sum;
+	int res = 0, arg_len, validation_sum;
 	uint8_t checksum;
 	char validation_buff[2];
 

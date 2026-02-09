@@ -1,9 +1,18 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(rgpstk C)
+if (USE_PICO_LIB)
+	include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
-set(CMAKE_C_STANDARD 11)
-include(CTest)
+	project(rgpstk C CXX ASM)
+
+	set(CMAKE_C_STANDARD 11)
+	set(CMAKE_CXX_STANDARD 17)
+else ()
+	project(rgpstk C)
+
+	set(CMAKE_C_STANDARD 11)
+	include(CTest)
+endif ()
 
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/version.txt" ver)
 string(REGEX MATCH "VERSION_MAJOR ([0-9]*)" _ ${ver})
@@ -20,14 +29,26 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
 
-add_library(rgpstk STATIC lib/nmea.c lib/nmea.h
-	lib/version.c lib/version.h
-	lib/geo.c lib/geo.h
-	test/tests/test_nmea_invalid.c)
-target_link_libraries(rgpstk PRIVATE m)
+set(LIB_SOURCES lib/nmea.c lib/nmea.h lib/version.c lib/version.h lib/geo.c lib/geo.h)
 
-include(cmake/coverage.cmake)
-handle_coverage(rgpstk)
+add_library(rgpstk_objects OBJECT ${LIB_SOURCES})
+set_target_properties(rgpstk_objects PROPERTIES POSITION_INDEPENDENT_CODE ON)
+add_library(rgpstk_static STATIC $<TARGET_OBJECTS:rgpstk_objects>)
+set_target_properties(rgpstk_static PROPERTIES OUTPUT_NAME "rgpstk")
+add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
-add_subdirectory(tools)
-add_subdirectory(test)
+if (USE_PICO_LIB)
+	target_link_libraries(rgpstk_static PRIVATE pico_stdlib m)
+else ()
+	add_library(rgpstk_shared SHARED $<TARGET_OBJECTS:rgpstk_objects>)
+	set_target_properties(rgpstk_shared PROPERTIES OUTPUT_NAME "rgpstk")
+	target_link_libraries(rgpstk_static PRIVATE m)
+	target_link_libraries(rgpstk_shared PRIVATE m)
+	include(cmake/coverage.cmake)
+	handle_coverage(rgpstk_static)
+	handle_coverage(rgpstk_shared)
+
+	add_subdirectory(tools)
+	add_subdirectory(test)
+endif ()
+unset(USE_PICO_LIB CACHE)
