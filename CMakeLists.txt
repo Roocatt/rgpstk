@@ -29,7 +29,7 @@ add_library(rgpstk STATIC lib/nmea.c lib/nmea.h
 target_link_libraries(rgpstk PRIVATE m)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Coverage")
-	add_custom_target(generate_coverage_report
+	add_custom_target(cov_report
 		COMMAND llvm-profdata merge "-output=${CMAKE_SOURCE_DIR}/coverage/test_run.profdata" "${CMAKE_SOURCE_DIR}/coverage/test_run.profraw"
 		COMMAND llvm-cov show "${CMAKE_SOURCE_DIR}/build/test_runner"  "-instr-profile=${CMAKE_SOURCE_DIR}/coverage/test_run.profdata" -format=text "-output-dir=${CMAKE_SOURCE_DIR}/coverage_report/test_run")
 endif ()
