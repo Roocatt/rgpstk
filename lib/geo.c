@@ -195,7 +195,7 @@ rgpstk_geo_calculate_distance_spherical_law_of_cosines(const rgpstk_geo_coordina
 	if (distance < -1.0)
 		distance = -1.0;
 
-	distance = DEG_FROM_RAD(acos(distance)) * 111.18957696;
+	distance = DEG_FROM_RAD(acos(distance)) * 11118.957696;
 
 	return (distance);
 }

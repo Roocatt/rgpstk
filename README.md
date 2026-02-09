@@ -21,7 +21,7 @@ Documentation is available on the
 [GitHub wiki](https://github.com/Roocatt/rgpstk/wiki). The wiki can also
 be cloned using git from `https://github.com/Roocatt/rgpstk.wiki.git`.
 
-# Building
+## Building
 
 ```sh
 # Generate build files with CMake
@@ -43,7 +43,14 @@ make test
 make install
 ```
 
-# Licence
+## Issues and Suggestions
+
+Find a bug or problem? Have a suggestion for how RGPSTK could be better,
+or any tools or features you would like to see added?
+
+[Open a GitHub issue](https://github.com/Roocatt/rgpstk/issues/new/choose)
+
+## Licence
 
 This software is available under the ISC licence. This is a BSD-like
 licence suitable for use in closed-source and/or commercial projects.

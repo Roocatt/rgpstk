@@ -10,7 +10,7 @@ if (USE_PICO_LIB)
 else ()
 	project(rgpstk C)
 
-	set(CMAKE_C_STANDARD 11)
+	set(CMAKE_C_STANDARD 99)
 	include(CTest)
 endif ()
 

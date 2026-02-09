@@ -24,11 +24,12 @@ main(void)
 {
 	int res, res_final = 0;
 
+	RUN_TEST(test_geo_calc);
+	RUN_TEST(test_geo_misc);
+	RUN_TEST(test_nmea_checksum);
 	RUN_TEST(test_nmea_invalid);
 	RUN_TEST(test_nmea_lat_long);
 	RUN_TEST(test_version);
-	RUN_TEST(test_geo_calc);
-	RUN_TEST(test_geo_misc);
 
 	return(res_final);
 }
