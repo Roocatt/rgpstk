@@ -23,6 +23,7 @@ extern "C" {
 int	test_geo_calc(void);
 int	test_nmea_lat_long(void);
 int	test_version(void);
+int	test_geo_misc(void);
 
 #if defined(__cplusplus)
 }

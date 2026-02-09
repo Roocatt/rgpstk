@@ -6,7 +6,8 @@ set(CMAKE_C_STANDARD 11)
 
 include("${CMAKE_SOURCE_DIR}/cmake/coverage.cmake")
 
-add_executable(test_runner src/test_runner.c tests/test_nmea_lat_long.c tests/test_version.c tests/test_geo_calc.c)
+add_executable(test_runner src/test_runner.c tests/test_nmea_lat_long.c tests/test_version.c tests/test_geo_calc.c
+	tests/test_geo_misc.c)
 target_link_libraries(test_runner PRIVATE rgpstk)
 add_test(NAME all_tests COMMAND "${CMAKE_SOURCE_DIR}/build/test_runner")
 set_tests_properties(all_tests PROPERTIES ENVIRONMENT "LLVM_PROFILE_FILE=${CMAKE_SOURCE_DIR}/coverage/test_run.profraw")

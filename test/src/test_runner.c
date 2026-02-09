@@ -27,6 +27,7 @@ main(void)
 	RUN_TEST(test_nmea_lat_long);
 	RUN_TEST(test_version);
 	RUN_TEST(test_geo_calc);
+	RUN_TEST(test_geo_misc);
 
 	return(res_final);
 }

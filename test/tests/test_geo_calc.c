@@ -59,6 +59,27 @@ test_geo_calc(void)
 	printf("rgpstk_geo_calculate_distance_spherical_law_of_cosines %f\n",
 	    rgpstk_geo_calculate_distance_spherical_law_of_cosines(&lat_a, &lon_a, &lat_b, &lon_b));
 
+	/* load the same values in to each */
+	rgpstk_nmea_message_free(&message2);
+	res = rgpstk_nmea_message_load(nmea_gga1, sizeof(nmea_gga1) - 1, &message2);
+	if (res) {
+		printf("rgpstk_nmea_message_load for GGA #2 returned %d\n", res);
+		rgpstk_nmea_message_free(&message1);
+		goto end;
+	}
+
+	res = rgpstk_nmea_gps_get_lat_long(&message2, &lat_b, &lon_b);
+	if (res) {
+		printf("rgpstk_nmea_gps_get_lat_long for GGA #1 into message #2 returned %d\n", res);
+		goto err;
+	}
+
+	printf("rgpstk_geo_calculate_distance %f\n", rgpstk_geo_calculate_distance(&lat_a, &lon_a, &lat_b, &lon_b));
+	printf("rgpstk_geo_calculate_distance_haversine %f\n",
+	    rgpstk_geo_calculate_distance_haversine(&lat_a, &lon_a, &lat_b, &lon_b));
+	printf("rgpstk_geo_calculate_distance_spherical_law_of_cosines %f\n",
+	    rgpstk_geo_calculate_distance_spherical_law_of_cosines(&lat_a, &lon_a, &lat_b, &lon_b));
+
 err:
 	rgpstk_nmea_message_free(&message1);
 	rgpstk_nmea_message_free(&message2);
