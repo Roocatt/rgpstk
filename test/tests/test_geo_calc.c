@@ -40,12 +40,12 @@ test_geo_calc(void)
 		goto end;
 	}
 
-	res = rgpstk_nmea_gps_get_lat_long(&message1, &lat_a, &lon_a);
+	res = rgpstk_nmea_message_lat_long(&message1, &lat_a, &lon_a);
 	if (res) {
 		printf("rgpstk_nmea_gps_get_lat_long for GGA #1 returned %d\n", res);
 		goto err;
 	}
-	res = rgpstk_nmea_gps_get_lat_long(&message2, &lat_b, &lon_b);
+	res = rgpstk_nmea_message_lat_long(&message2, &lat_b, &lon_b);
 	if (res) {
 		printf("rgpstk_nmea_gps_get_lat_long for GGA #2 returned %d\n", res);
 		goto err;
@@ -66,7 +66,7 @@ test_geo_calc(void)
 		goto end;
 	}
 
-	res = rgpstk_nmea_gps_get_lat_long(&message2, &lat_b, &lon_b);
+	res = rgpstk_nmea_message_lat_long(&message2, &lat_b, &lon_b);
 	if (res) {
 		printf("rgpstk_nmea_gps_get_lat_long for GGA #1 into message #2 returned %d\n", res);
 		goto err;

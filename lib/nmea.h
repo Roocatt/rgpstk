@@ -106,12 +106,12 @@ typedef struct {
 } rgpstk_nmea_message_t;
 
 double	rgpstk_nmea_dm2d(double);
-int	rgpstk_checksum_calculate(const char *, uint8_t, uint8_t *);
+int	rgpstk_nmea_checksum_calculate(const char *, uint8_t, uint8_t *);
 
 bool	rgpstk_nmea_message_has_lat_long(const rgpstk_nmea_message_t *);
-int	rgpstk_nmea_gps_get_lat_long_gga(const rgpstk_nmea_message_t *, rgpstk_geo_coordinate_t *, rgpstk_geo_coordinate_t *);
-int	rgpstk_nmea_gps_get_lat_long_gll(const rgpstk_nmea_message_t *, rgpstk_geo_coordinate_t *, rgpstk_geo_coordinate_t *);
-int	rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *, rgpstk_geo_coordinate_t *, rgpstk_geo_coordinate_t *);
+int	rgpstk_nmea_message_lat_long(const rgpstk_nmea_message_t *, rgpstk_geo_coordinate_t *, rgpstk_geo_coordinate_t *);
+int	rgpstk_nmea_gga_lat_long(const rgpstk_nmea_message_t *, rgpstk_geo_coordinate_t *, rgpstk_geo_coordinate_t *);
+int	rgpstk_nmea_gll_lat_long(const rgpstk_nmea_message_t *, rgpstk_geo_coordinate_t *, rgpstk_geo_coordinate_t *);
 
 int	rgpstk_nmea_gsv(const rgpstk_nmea_message_t *, rgpstk_nmea_gsv_t *);
 int	rgpstk_nmea_gsv_sv(const rgpstk_nmea_message_t *, const rgpstk_nmea_gsv_t *, uint8_t, rgpstk_nmea_gsv_sv_t *);

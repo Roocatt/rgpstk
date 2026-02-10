@@ -160,7 +160,7 @@ end:
 }
 
 int
-rgpstk_checksum_calculate(const char *buffer, uint8_t len, uint8_t *checksum_res)
+rgpstk_nmea_checksum_calculate(const char *buffer, uint8_t len, uint8_t *checksum_res)
 {
 	int res = 0;
 	uint8_t i, checksum_calc = 0;
@@ -204,7 +204,32 @@ rgpstk_nmea_message_has_lat_long(const rgpstk_nmea_message_t *msg)
 }
 
 int
-rgpstk_nmea_gps_get_lat_long_gga(const rgpstk_nmea_message_t *msg, rgpstk_geo_coordinate_t *lat, rgpstk_geo_coordinate_t *lon)
+rgpstk_nmea_message_lat_long(const rgpstk_nmea_message_t *msg, rgpstk_geo_coordinate_t *lat, rgpstk_geo_coordinate_t *lon)
+{
+	int res;
+
+	if (!rgpstk_nmea_message_has_lat_long(msg)) {
+		res = -1;
+		goto end;
+	}
+
+	switch (msg->nmea_sentence) {
+	case RGPSTK_NMEA_SENTENCE_GPS_FIX_DATA:
+		res = rgpstk_nmea_gga_lat_long(msg, lat, lon);
+		break;
+	case RGPSTK_NMEA_SENTENCE_GEO_LAT_LONG:
+		res = rgpstk_nmea_gll_lat_long(msg, lat, lon);
+		break;
+	default:
+		res = -1;
+	}
+
+	end:
+		return (res);
+}
+
+int
+rgpstk_nmea_gga_lat_long(const rgpstk_nmea_message_t *msg, rgpstk_geo_coordinate_t *lat, rgpstk_geo_coordinate_t *lon)
 {
 	double geo_lat, geo_long;
 	int res = 0;
@@ -261,7 +286,7 @@ err:
 }
 
 int
-rgpstk_nmea_gps_get_lat_long_gll(const rgpstk_nmea_message_t *msg, rgpstk_geo_coordinate_t *lat, rgpstk_geo_coordinate_t *lon)
+rgpstk_nmea_gll_lat_long(const rgpstk_nmea_message_t *msg, rgpstk_geo_coordinate_t *lat, rgpstk_geo_coordinate_t *lon)
 {
 	double geo_lat, geo_long;
 	int res = 0;
@@ -309,31 +334,6 @@ rgpstk_nmea_gps_get_lat_long_gll(const rgpstk_nmea_message_t *msg, rgpstk_geo_co
 
 	err:
 		return (res);
-}
-
-int
-rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *msg, rgpstk_geo_coordinate_t *lat, rgpstk_geo_coordinate_t *lon)
-{
-	int res;
-
-	if (!rgpstk_nmea_message_has_lat_long(msg)) {
-		res = -1;
-		goto end;
-	}
-
-	switch (msg->nmea_sentence) {
-	case RGPSTK_NMEA_SENTENCE_GPS_FIX_DATA:
-		res = rgpstk_nmea_gps_get_lat_long_gga(msg, lat, lon);
-		break;
-	case RGPSTK_NMEA_SENTENCE_GEO_LAT_LONG:
-		res = rgpstk_nmea_gps_get_lat_long_gll(msg, lat, lon);
-		break;
-	default:
-		res = -1;
-	}
-
-end:
-	return (res);
 }
 
 int
@@ -573,7 +573,7 @@ rgpstk_nmea_message_load(const char *buffer, const uint8_t len, rgpstk_nmea_mess
 		}
 	}
 
-	if (check_sum && rgpstk_checksum_calculate(buffer, len, &checksum_calc) == 0) {
+	if (check_sum && rgpstk_nmea_checksum_calculate(buffer, len, &checksum_calc) == 0) {
 		if (msg->nmea_fields[msg->nmea_fields_count - 1].len == 2) {
 			/* Easiest error check for `strtol` is `errno`, but it does not set it to `0` on success. There
 			 * is also no guarantee that it will be zero before `strtol` is called. So, we set it to zero

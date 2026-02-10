@@ -25,7 +25,7 @@ test_nmea_checksum(void)
 	char nmea_message_truncated[] = "$GPGLL,3953.88008971,N,10506.75";
 	uint8_t nmea_checksum = 0;
 
-	res = rgpstk_checksum_calculate(nmea_message, sizeof(nmea_message), &nmea_checksum);
+	res = rgpstk_nmea_checksum_calculate(nmea_message, sizeof(nmea_message), &nmea_checksum);
 	if (res != 0 || nmea_checksum != 0x7A) {
 		printf("Failed checksum calculation for valid message\n");
 		res = 1;
@@ -33,14 +33,14 @@ test_nmea_checksum(void)
 	}
 
 	/* intentionally use larger size */
-	res = rgpstk_checksum_calculate(nmea_message_truncated, sizeof(nmea_message) - 1, &nmea_checksum);
+	res = rgpstk_nmea_checksum_calculate(nmea_message_truncated, sizeof(nmea_message) - 1, &nmea_checksum);
 	if (res == 0) {
 		printf("Passed checksum calculation for truncated message with wrong length\n");
 		res = 2;
 		goto end;
 	}
 
-	res = rgpstk_checksum_calculate(nmea_message_truncated, sizeof(nmea_message_truncated) - 1, &nmea_checksum);
+	res = rgpstk_nmea_checksum_calculate(nmea_message_truncated, sizeof(nmea_message_truncated) - 1, &nmea_checksum);
 	if (res == 0) {
 		printf("Passed checksum calculation for truncated message\n");
 		res = 3;

@@ -49,7 +49,7 @@ test_nmea_invalid (void)
 		rgpstk_nmea_message_free(&message);
 		goto end;
 	}
-	test_res = rgpstk_nmea_gps_get_lat_long_gga(&message, &lat, &lon);
+	test_res = rgpstk_nmea_gga_lat_long(&message, &lat, &lon);
 	if (test_res == 0) {
 		printf("rgpstk_nmea_gps_get_lat_long_gga did not fail invalid message.\n");
 		res = 4;
@@ -85,7 +85,7 @@ test_nmea_invalid (void)
 		res = 8;
 		goto end;
 	}
-	test_res = rgpstk_nmea_gps_get_lat_long_gll(&message, &lat, &lon);
+	test_res = rgpstk_nmea_gll_lat_long(&message, &lat, &lon);
 	if (test_res == 0) {
 		printf("rgpstk_nmea_gps_get_lat_long_gll did not fail invalid message.\n");
 		res = 9;
@@ -100,7 +100,7 @@ test_nmea_invalid (void)
 		res = 10;
 		goto end;
 	}
-	test_res = rgpstk_nmea_gps_get_lat_long_gll(&message, &lat, &lon);
+	test_res = rgpstk_nmea_gll_lat_long(&message, &lat, &lon);
 	if (test_res == 0) {
 		printf("rgpstk_nmea_gps_get_lat_long_gll did not fail invalid message.\n");
 		res = 11;
@@ -115,7 +115,7 @@ test_nmea_invalid (void)
 		res = 12;
 		goto end;
 	}
-	test_res = rgpstk_nmea_gps_get_lat_long_gll(&message, &lat, &lon);
+	test_res = rgpstk_nmea_gll_lat_long(&message, &lat, &lon);
 	if (test_res == 0) {
 		printf("rgpstk_nmea_gps_get_lat_long_gll did not fail invalid message.\n");
 		res = 13;
@@ -128,7 +128,7 @@ test_nmea_invalid (void)
 		res = 14;
 		goto end;
 	}
-	test_res = rgpstk_nmea_gps_get_lat_long_gll(&message, &lat, &lon);
+	test_res = rgpstk_nmea_gll_lat_long(&message, &lat, &lon);
 	if (test_res == 0) {
 		printf("rgpstk_nmea_gps_get_lat_long_gll did not fail invalid message.\n");
 		res = 15;

@@ -40,7 +40,7 @@ test_nmea_lat_long(void)
 		goto end;
 	}
 
-	res = rgpstk_nmea_gps_get_lat_long(&message, &lat, &lon);
+	res = rgpstk_nmea_message_lat_long(&message, &lat, &lon);
 	if (res) {
 		printf("error reading lat/long for GGA message\n");
 		rgpstk_nmea_message_free(&message);
@@ -59,7 +59,7 @@ test_nmea_lat_long(void)
 		rgpstk_nmea_message_free(&message);
 		goto end;
 	}
-	res = rgpstk_nmea_gps_get_lat_long(&message, &lat, &lon);
+	res = rgpstk_nmea_message_lat_long(&message, &lat, &lon);
 	if (res) {
 		printf("error reading lat/long for GGA message\n");
 		rgpstk_nmea_message_free(&message);

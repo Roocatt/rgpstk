@@ -77,7 +77,7 @@ distance_delta(const rgpstk_nmea_message_t *message, double *distance)
 		goto end;
 	}
 
-	rgpstk_nmea_gps_get_lat_long(message, &lat, &lon);
+	rgpstk_nmea_message_lat_long(message, &lat, &lon);
 
 	if (last_lat.direction == RGPSTK_GEO_DIR_UNKNOWN) {
 		res = false;

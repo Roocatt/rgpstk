@@ -35,13 +35,13 @@ main(int argc, char *argv[])
 	arg_len = strlen(argv[2]);
 
 	if (strcmp("calc", argv[1]) == 0) {
-		res = rgpstk_checksum_calculate(argv[2], arg_len, &checksum);
+		res = rgpstk_nmea_checksum_calculate(argv[2], arg_len, &checksum);
 		if (res == 0)
 			printf("%02x\n", checksum);
 		else
 			fprintf(stderr, "Could not calculate checksum. Ensure that '%s' is correct\n", argv[2]);
 	} else if (strcmp("valid", argv[1]) == 0) {
-		res = rgpstk_checksum_calculate(argv[2], arg_len, &checksum);
+		res = rgpstk_nmea_checksum_calculate(argv[2], arg_len, &checksum);
 		if (res != 0) {
 			fprintf(stderr, "Could not calculate checksum to complete validation.\n");
 			goto end;
