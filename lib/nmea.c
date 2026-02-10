@@ -134,6 +134,31 @@ valid_float_field(rgpstk_nmea_message_field_t field)
 	return (res);
 }
 
+static bool	valid_int_field(rgpstk_nmea_message_field_t, bool);
+
+static bool
+valid_int_field(rgpstk_nmea_message_field_t field, bool is_signed)
+{
+	uint8_t i;
+	bool res = true;
+
+	if (field.len == 0)
+		goto end;
+	if (is_signed)
+		i = field.value[0] == '-' ? 1 : 0;
+	else
+		i = 0;
+	for (; i < field.len; i++) {
+		if (field.value[i] < '0' || field.value[i] > '9') {
+			res = false;
+			i = field.len;
+		}
+	}
+
+end:
+	return (res);
+}
+
 int
 rgpstk_checksum_calculate(const char *buffer, uint8_t len, uint8_t *checksum_res)
 {
@@ -312,7 +337,117 @@ end:
 }
 
 int
-rgpstk_nmea_message_load(const char *buffer, uint8_t len, rgpstk_nmea_message_t *msg)
+rgpstk_nmea_gsv(const rgpstk_nmea_message_t *msg, rgpstk_nmea_gsv_t *gsv)
+{
+	rgpstk_nmea_gsv_t parsed_gsv = {0};
+	int64_t tmp;
+	int res = 0;
+	uint8_t non_sv_len = msg->nmea_checksum ? 4 : 3;
+	char *str_end = NULL;
+
+	if (msg->nmea_sentence != RGPSTK_NMEA_SENTENCE_GNSS_SAT_IN_VIEW || !msg->nmea_valid) {
+		res = -1;
+		goto end;
+	}
+
+	if ((msg->nmea_fields_count - non_sv_len) % 4 != 0) {
+		res = -2;
+		goto end;
+	}
+
+	if (!valid_int_field(msg->nmea_fields[0], false)
+	    || !(msg->nmea_fields[0].len == 1 || msg->nmea_fields[0].len == 2)
+	    || !valid_int_field(msg->nmea_fields[1], false)
+	    || !(msg->nmea_fields[1].len == 1 || msg->nmea_fields[1].len == 2)
+	    || !valid_int_field(msg->nmea_fields[2], false)
+	    || !(msg->nmea_fields[2].len == 1 || msg->nmea_fields[2].len == 2)) {
+		res = -3;
+		goto end;
+	}
+
+	errno = 0;
+	tmp = strtol(msg->nmea_fields[0].value, &str_end, 10);
+	if (str_end == NULL || errno != 0 || tmp > UINT8_MAX) {
+		res = -4;
+		goto end;
+	}
+	parsed_gsv.gsv_message_total_count = (uint8_t)tmp;
+	tmp = strtol(msg->nmea_fields[1].value, &str_end, 10);
+	if (str_end == NULL || errno != 0 || tmp > UINT8_MAX || tmp > parsed_gsv.gsv_message_total_count) {
+		res = -5;
+		goto end;
+	}
+	parsed_gsv.gsv_message_number = (uint8_t)tmp;
+	tmp = strtol(msg->nmea_fields[2].value, &str_end, 10);
+	if (str_end == NULL || errno != 0 || tmp > UINT8_MAX) {
+		res = -6;
+	}
+	parsed_gsv.gsv_num_sats = (uint8_t)tmp;
+
+	parsed_gsv.gsv_msg_sv_count = (msg->nmea_fields_count - non_sv_len) / 4;
+	memcpy(gsv, &parsed_gsv, sizeof(rgpstk_nmea_gsv_t));
+
+end:
+	return (res);
+}
+
+int
+rgpstk_nmea_gsv_sv(const rgpstk_nmea_message_t *msg, const rgpstk_nmea_gsv_t *gsv, uint8_t index, rgpstk_nmea_gsv_sv_t *sv)
+{
+	rgpstk_nmea_gsv_sv_t parsed_gsv = {0};
+	int64_t tmp;
+	int res = 0;
+	char *str_end = NULL;
+	uint8_t field_pos;
+
+	if (index >= gsv->gsv_msg_sv_count) {
+		res = -1;
+		goto end;
+	}
+
+	field_pos = 3 + (4 * index);
+	if (field_pos > msg->nmea_fields_count) {
+		res = -2;
+		goto end;
+	}
+
+	errno = 0;
+	tmp = strtol(msg->nmea_fields[field_pos].value, &str_end, 10);
+	if (str_end == NULL || errno != 0 || tmp > UINT8_MAX) {
+		res = -3;
+		goto end;
+	}
+	parsed_gsv.sv_prn = (uint8_t)tmp;
+
+	tmp = strtol(msg->nmea_fields[field_pos + 1].value, &str_end, 10);
+	if (str_end == NULL || errno != 0 || tmp > UINT8_MAX) {
+		res = -4;
+		goto end;
+	}
+	parsed_gsv.sv_elevation = (uint8_t)tmp;
+
+	tmp = strtol(msg->nmea_fields[field_pos + 2].value, &str_end, 10);
+	if (str_end == NULL || errno != 0 || tmp > UINT16_MAX) {
+		res = -5;
+		goto end;
+	}
+	parsed_gsv.sv_azumith = (uint16_t)tmp;
+
+	tmp = strtol(msg->nmea_fields[field_pos].value, &str_end, 10);
+	if (str_end == NULL || errno != 0 || tmp > INT8_MAX) {
+		res = -6;
+		goto end;
+	}
+	parsed_gsv.sv_snr = (int8_t)tmp;
+
+	memcpy(sv, &parsed_gsv, sizeof(rgpstk_nmea_gsv_t));
+
+end:
+	return (res);
+}
+
+int
+rgpstk_nmea_message_load(const char *buffer, const uint8_t len, rgpstk_nmea_message_t *msg)
 {
 	rgpstk_nmea_talker_t talker = RGPSTK_NMEA_TALKER_UNKNOWN;
 	rgpstk_nmea_sentence_t sentence = RGPSTK_NMEA_SENTENCE_UNKNOWN;

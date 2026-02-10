@@ -40,6 +40,20 @@
 extern "C" {
 #endif
 
+typedef struct {
+	uint8_t  sv_prn;
+	uint8_t  sv_elevation;
+	uint16_t sv_azumith;
+	int8_t   sv_snr; /* signal to noise ratio. sv_snr < 0 if null field. */
+} rgpstk_nmea_gsv_sv_t;
+
+typedef struct {
+	uint8_t gsv_message_total_count;
+	uint8_t gsv_message_number;
+	uint8_t gsv_num_sats;
+	uint8_t gsv_msg_sv_count;
+} rgpstk_nmea_gsv_t;
+
 typedef enum {
 	RGPSTK_NMEA_TALKER_UNKNOWN,
 	RGPSTK_NMEA_TALKER_GPS,
@@ -98,6 +112,9 @@ bool	rgpstk_nmea_message_has_lat_long(const rgpstk_nmea_message_t *);
 int	rgpstk_nmea_gps_get_lat_long_gga(const rgpstk_nmea_message_t *, rgpstk_geo_coordinate_t *, rgpstk_geo_coordinate_t *);
 int	rgpstk_nmea_gps_get_lat_long_gll(const rgpstk_nmea_message_t *, rgpstk_geo_coordinate_t *, rgpstk_geo_coordinate_t *);
 int	rgpstk_nmea_gps_get_lat_long(const rgpstk_nmea_message_t *, rgpstk_geo_coordinate_t *, rgpstk_geo_coordinate_t *);
+
+int	rgpstk_nmea_gsv(const rgpstk_nmea_message_t *, rgpstk_nmea_gsv_t *);
+int	rgpstk_nmea_gsv_sv(const rgpstk_nmea_message_t *, const rgpstk_nmea_gsv_t *, uint8_t, rgpstk_nmea_gsv_sv_t *);
 
 int	rgpstk_nmea_message_load(const char *, uint8_t, rgpstk_nmea_message_t *);
 void	rgpstk_nmea_message_free(rgpstk_nmea_message_t *);

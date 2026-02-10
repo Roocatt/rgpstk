@@ -23,6 +23,7 @@ extern "C" {
 int	test_geo_calc(void);
 int	test_geo_misc(void);
 int	test_nmea_checksum(void);
+int	test_nmea_gsv(void);
 int	test_nmea_invalid(void);
 int	test_nmea_lat_long(void);
 int	test_version(void);
