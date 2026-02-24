@@ -8,6 +8,8 @@ on:
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Install dependencies
         run: sudo apt install -y cmake build-essential
