@@ -3,6 +3,7 @@
 [![Build and Test](https://github.com/Roocatt/rgpstk/actions/workflows/workflow.yml/badge.svg)](https://github.com/Roocatt/rgpstk/actions/workflows/workflow.yml)
 [![codecov](https://codecov.io/github/Roocatt/rgpstk/graph/badge.svg?token=1LYWL3ZMVB)](https://codecov.io/github/Roocatt/rgpstk)
 [![CodeQL](https://github.com/Roocatt/rgpstk/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Roocatt/rgpstk/actions/workflows/github-code-scanning/codeql)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Roocatt_rgpstk&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Roocatt_rgpstk)
 ![GitHub Licence](https://img.shields.io/github/license/Roocatt/piMCP2515?label=licence)
 
 A helpful library and tool collection for handling GPS related tasks.
